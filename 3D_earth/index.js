@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-
+import getStarField from "../3D_earth/src/getStarfield.js";
 const w = window.innerWidth;
 const h = window.innerHeight;
 
@@ -21,21 +21,33 @@ const loader = new THREE.TextureLoader();
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * (Math.PI / 180); // Earth's axial tilt
 scene.add(earthGroup);
-//object
-const geometry = new THREE.IcosahedronGeometry(1.0, 16);
+
+const geometry = new THREE.IcosahedronGeometry(1.0, 12);
 const material = new THREE.MeshStandardMaterial({
   map: loader.load("./textures/00_earthmap1k.jpg"),
 });
 const earthMesh = new THREE.Mesh(geometry, material);
 
-const hemiLight = new THREE.HemisphereLight(0x0099ff, 0xaa5500);
-scene.add(hemiLight);
+const lightsMat = new THREE.MeshBasicMaterial({
+  map: loader.load("./textures/03_earthlights1k.jpg"),
+  blending: THREE.AdditiveBlending,
+});
+const lightsMesh = new THREE.Mesh(geometry, lightsMat);
+
+const sunLight = new THREE.DirectionalLight(0xffffff);
+sunLight.position.set(-2, 0.5, 1.5);
+scene.add(sunLight);
 
 earthGroup.add(earthMesh);
+earthGroup.add(lightsMesh);
+
+const stars = getStarField({ numStars: 20000 });
+scene.add(stars);
 
 function animate() {
   requestAnimationFrame(animate);
   earthMesh.rotation.y += 0.001;
+  lightsMesh.rotation.y += 0.001;
   controls.update();
   renderer.render(scene, camera);
 }
